@@ -1,5 +1,5 @@
-FROM python:3.9
-RUN apt-get update && apt-get -y install cron
+FROM python:3.9-slim
+RUN apt-get update && apt-get -y install cron --no-install-recommends
 
 COPY ./move_episode.py /app/move_episode.py
 COPY ./script-cron /etc/cron.d/script-cron

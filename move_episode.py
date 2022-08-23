@@ -1,9 +1,15 @@
 #!/usr/local/bin/python
 
-import os
 from glob import glob
 import shutil
+import re
 
-from datetime import datetime
-print("Test")
-shutil.copyfile("/app/move_episode.py", "/app/move_episode2.py")
+watch = glob("/watch")
+for file in watch:
+    if file.endswith((".mkv", "mp4")):
+        parts = re.match(r"(.*S\d+E)(\d+)(.*)", file)
+        episode_number = int(parts.group(2))
+        new_episode_number = f"{(episode_number + 1):02d}"
+        new_filename = parts.group(1) + new_episode_number + parts.group(3)
+        print(f"Changing {file} to {new_filename}")
+        shutil.copyfile(f"/watch/{file}", f"/dest/{new_filename}")
