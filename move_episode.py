@@ -8,7 +8,7 @@ from glob import glob
 watch = glob("/watch/**/*", recursive=True)
 for file in watch:
     filename = os.path.basename(file)
-    if filename.endswith((".mkv", "mp4")):
+    if filename.endswith((".ts", "mp4", "mkv")):
         try:
             parts = re.match(r"(.*S\d+E)(\d+)(.*)", filename)
             episode_number = int(parts.group(2))
