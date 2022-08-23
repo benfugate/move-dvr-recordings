@@ -1,0 +1,2 @@
+# Run python script every minute
+* * * * * /usr/local/bin/python /app/move_episode.py >> /var/log/cron.log 2>&1
