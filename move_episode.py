@@ -1,19 +1,5 @@
 #!/usr/local/bin/python
 
-"""
-This script has a very specific use case.
-
-Currently, 'Big Brother' has the incorrect episode numbers, and show name from the electronic program guide (EPG).
-This script gets around these issues by renaming the episode to represent the correct number, and move the file from
-a temp storage directory to the "Season 24" folder of "Big Brother (US)" mounted to "/dest/". This will cause Plex
-to refresh metadata, and properly show the recorded episode as expected.
-
-Also, after a Plex recording, it is placing the files for The Challenge and Big Brother in folders based on the EPG
-name. This is incorrect, and the files should be placed in their matching folders based on my folder structure.
-
-Scripts in Tautulli are set up to refresh Sonarr so the episode can be monitored and managed after this is done.
-"""
-
 import os
 import re
 import shutil
