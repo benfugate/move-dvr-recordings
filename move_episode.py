@@ -4,6 +4,7 @@ import os
 import re
 import shutil
 from glob import glob
+from datetime import datetime
 
 watch = glob("/watch/**/*", recursive=True)
 for file in watch:
@@ -36,3 +37,5 @@ for folder, _, _ in os.walk("/watch", topdown=False):  # Listing the files
         os.rmdir(folder)
     except OSError as ex:
         continue
+
+print(f"Heartbeat... {datetime.now().isoformat()} Watch: {watch}")
