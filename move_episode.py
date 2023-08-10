@@ -9,7 +9,7 @@ from datetime import datetime
 watch = glob("/watch/**/*", recursive=True)
 
 shows = {
-    "Big Brother (US)": "Big Brother (2000)",
+    "Big Brother (2000)": "Big Brother (2000)",
     "The Challenge": "The Challenge - USA (2022)"
 }
 
