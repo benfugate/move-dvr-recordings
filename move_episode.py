@@ -20,15 +20,13 @@ for file in watch:
             for show in shows.keys():
                 if show in filename:
                     parts = re.match(r".*S(\d+)E\d+.*", filename)
-                    season_number = parts.group(1)
+                    season_number = parts.group(1).lstrip("0")
                     print(f"Moving {filename}... ", end="")
                     new_filename = filename
+                    os.makedirs(f"/dest/{shows[show]}/Season {season_number}/", exist_ok=True)
                     shutil.move(file, f"/dest/{shows[show]}/Season {season_number}/{new_filename}")
                     print("Success!")
                     break
-                else:
-                    print(f"Show not recognized: {filename}")
-                    raise NotImplemented
         except Exception as e:
             print(f"Error: {e}")
 
