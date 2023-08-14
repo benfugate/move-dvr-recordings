@@ -21,10 +21,12 @@ for file in watch:
                 if show in filename:
                     parts = re.match(r".*S(\d+)E\d+.*", filename)
                     season_number = parts.group(1).lstrip("0")
+                    new_location = f"/dest/{shows[show]}/Season {season_number}/"
+
                     print(f"Moving {filename}... ", end="")
-                    new_filename = filename
-                    os.makedirs(f"/dest/{shows[show]}/Season {season_number}/", exist_ok=True)
-                    shutil.move(file, f"/dest/{shows[show]}/Season {season_number}/{new_filename}")
+                    os.makedirs(new_location, exist_ok=True, mode=0o777)
+                    shutil.move(file, f"{new_location}{filename}")
+
                     print("Success!")
                     break
         except Exception as e:
