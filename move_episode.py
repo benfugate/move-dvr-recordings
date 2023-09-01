@@ -2,42 +2,37 @@
 
 import os
 import re
-import shutil
 from glob import glob
 from datetime import datetime
 
-watch = glob("/watch/**/*", recursive=True)
+watch_path = "/media/ChannelsDVR/TV/**/*"
+dest_path = "/media/Plex/TV Shows/"
+watch = glob(watch_path, recursive=True)
 
 shows = {
-    "Big Brother (2000)": "Big Brother (2000)",
+    "Big Brother": "Big Brother (2000)",
     "The Challenge": "The Challenge - USA (2022)"
 }
 
 for file in watch:
     filename = os.path.basename(file)
-    if filename.endswith((".ts", "mp4", "mkv")):
+    if filename.endswith((".ts", "mp4", "mkv", "mpg")):
         try:
-            for show in shows.keys():
+            for show, show_dest in shows.items():
                 if show in filename:
-                    parts = re.match(r".*S(\d+)E\d+.*", filename)
-                    season_number = parts.group(1).lstrip("0")
-                    new_location = f"/dest/{shows[show]}/Season {season_number}/"
+                    parts = re.match(r".*(S(\d+)E\d+).*", filename)
+                    season_number = parts.group(2).lstrip("0")
+                    new_location = f"{dest_path}/{show_dest}/Season {season_number}/"
 
-                    print(f"Moving {filename}... ", end="")
-                    os.makedirs(new_location, exist_ok=True, mode=0o777)
-                    shutil.move(file, f"{new_location}{filename}")
+                    if any(parts.group(1) in existing_file for existing_file in reversed(glob(f"{new_location}*"))):
+                        continue
 
+                    print(f"Creating hard link for {filename}... ", end="")
+                    os.makedirs(new_location, exist_ok=True, mode=0o755)
+                    os.link(file, f"{new_location}{filename}")
                     print("Success!")
                     break
         except Exception as e:
             print(f"Error: {e}")
 
-for folder, _, _ in os.walk("/watch", topdown=False):  # Listing the files
-    if folder == "/watch":
-        break
-    try:
-        os.rmdir(folder)
-    except OSError as ex:
-        continue
-
-print(f"Heartbeat... {datetime.now().isoformat()} Watch: {watch}")
+print(f"Heartbeat... {datetime.now().isoformat()}")

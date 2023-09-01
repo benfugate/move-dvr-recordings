@@ -1,4 +1,4 @@
-FROM python:3.9-slim
+FROM python:3.11-slim
 RUN apt-get update && apt-get -y install cron --no-install-recommends
 
 COPY ./move_episode.py /app/move_episode.py
