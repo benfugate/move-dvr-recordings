@@ -21,12 +21,12 @@ shows = {
 
 
 # Function to check if a file is being actively written
-def is_file_being_written(file_path, max_duration_seconds=10800):  # Three hours
+def is_file_being_written(file_path, max_duration_seconds=14400):
     initial_size = os.path.getsize(file_path)
     start_time = time.time()  # Get the start time
-    # Check file size repeatedly with a 5-second delay until max_duration_seconds is reached
+    # Check file size repeatedly until max_duration_seconds is reached
     while time.time() - start_time <= max_duration_seconds:
-        time.sleep(5)  # Sleep for 5 seconds before rechecking
+        time.sleep(20)  # Sleep before rechecking
         final_size = os.path.getsize(file_path)
         if initial_size == final_size:
             return False  # File size is not changing; not being actively written
@@ -38,6 +38,7 @@ def is_file_being_written(file_path, max_duration_seconds=10800):  # Three hours
 # Function to process a new file
 def process_new_file(file_path):
     filename = os.path.basename(file_path)
+    print(f"New file detected: {filename}. Waiting for recording to end.")
     if filename.endswith((".ts", "mp4", "mkv", "mpg")):
         try:
             for show, show_dest in shows.items():
@@ -46,8 +47,8 @@ def process_new_file(file_path):
                     season_number = parts.group(2).lstrip("0")
                     new_location = f"{dest_path}/{show_dest}/Season {season_number}/"
 
-                    # Check if the file is being actively written for up to three hours
-                    if is_file_being_written(file_path, max_duration_seconds=10800):
+                    # Check if the file is being actively written
+                    if is_file_being_written(file_path, max_duration_seconds=14400):
                         print(f"File {filename} is still being written after three hours; skipping...")
                         return
 
@@ -62,6 +63,7 @@ def process_new_file(file_path):
         except Exception as e:
             print(f"Error: {e}")
 
+
 # Define a custom event handler
 class FileHandler(FileSystemEventHandler):
     def on_created(self, event):
@@ -70,6 +72,7 @@ class FileHandler(FileSystemEventHandler):
             # Process each new file in parallel using ThreadPoolExecutor
             with ThreadPoolExecutor(max_workers=8) as executor:
                 executor.submit(process_new_file, event.src_path)
+
 
 if __name__ == "__main__":
     # Set up the observer to watch the directory
