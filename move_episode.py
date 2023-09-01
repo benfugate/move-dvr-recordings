@@ -15,7 +15,8 @@ dest_path = "/media/Plex/TV Shows/"
 # Dictionary of shows
 shows = {
     "Big Brother": "Big Brother (2000)",
-    "The Challenge": "The Challenge - USA (2022)"
+    "The Challenge": "The Challenge - USA (2022)",
+    "On Patrol Live": "On Patrol - Live (2022)"
 }
 
 
