@@ -2,9 +2,11 @@
 
 import os
 import re
+import time
 from glob import glob
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
+from concurrent.futures import ThreadPoolExecutor
 
 # Define the watch path and destination path
 watch_path = "/media/ChannelsDVR/TV/"
@@ -15,6 +17,22 @@ shows = {
     "Big Brother": "Big Brother (2000)",
     "The Challenge": "The Challenge - USA (2022)"
 }
+
+
+# Function to check if a file is being actively written
+def is_file_being_written(file_path, max_duration_seconds=10800):  # Three hours
+    initial_size = os.path.getsize(file_path)
+    start_time = time.time()  # Get the start time
+    # Check file size repeatedly with a 5-second delay until max_duration_seconds is reached
+    while time.time() - start_time <= max_duration_seconds:
+        time.sleep(5)  # Sleep for 5 seconds before rechecking
+        final_size = os.path.getsize(file_path)
+        if initial_size == final_size:
+            return False  # File size is not changing; not being actively written
+        # Update initial_size if the file size changed
+        initial_size = final_size
+    return True  # Max duration reached; file is being actively written
+
 
 # Function to process a new file
 def process_new_file(file_path):
@@ -27,14 +45,19 @@ def process_new_file(file_path):
                     season_number = parts.group(2).lstrip("0")
                     new_location = f"{dest_path}/{show_dest}/Season {season_number}/"
 
-                    if any(parts.group(1) in existing_file for existing_file in reversed(glob(f"{new_location}*"))):
-                        continue
+                    # Check if the file is being actively written for up to three hours
+                    if is_file_being_written(file_path, max_duration_seconds=10800):
+                        print(f"File {filename} is still being written after three hours; skipping...")
+                        return
+
+                    if any(parts.group(1) in existing_file for existing_file in glob(f"{new_location}*")):
+                        return
 
                     print(f"Creating hard link for {filename}... ", end="")
                     os.makedirs(new_location, exist_ok=True, mode=0o755)
                     os.link(file_path, f"{new_location}{filename}")
                     print("Success!")
-                    break
+                    return
         except Exception as e:
             print(f"Error: {e}")
 
@@ -43,7 +66,9 @@ class FileHandler(FileSystemEventHandler):
     def on_created(self, event):
         # React to file creation
         if not event.is_directory:
-            process_new_file(event.src_path)
+            # Process each new file in parallel using ThreadPoolExecutor
+            with ThreadPoolExecutor(max_workers=8) as executor:
+                executor.submit(process_new_file, event.src_path)
 
 if __name__ == "__main__":
     # Set up the observer to watch the directory
@@ -54,7 +79,7 @@ if __name__ == "__main__":
     # Start the observer
     observer.start()
 
-    print(f"Monitoring '{watch_path}' for new files...")
+    print(f"Monitoring {watch_path} for new files...")
 
     try:
         observer.join()
