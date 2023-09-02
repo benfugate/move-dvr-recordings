@@ -1,7 +1,8 @@
 FROM python:3.11-slim
-COPY ./move_episode.py ./requirements.txt /app/
+COPY ./src /app
 RUN touch /var/log/copier.log
+COPY requirements.txt entrypoint.sh /
+RUN pip install -r requirements.txt && \
+    rm requirements.txt
 WORKDIR /app
-RUN pip install -r requirements.txt
-COPY entrypoint.sh /
 CMD ["/bin/sh", "/entrypoint.sh"]
