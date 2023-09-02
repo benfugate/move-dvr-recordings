@@ -4,6 +4,7 @@ import os
 import re
 import time
 from glob import glob
+from datetime import datetime
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from concurrent.futures import ThreadPoolExecutor
@@ -18,6 +19,11 @@ shows = {
     "The Challenge": "The Challenge - USA (2022)",
     "On Patrol Live": "On Patrol - Live (2022)"
 }
+
+
+def pprint(text):
+    print(f"{datetime.now().isoformat()}: ", end="")
+    print(text)
 
 
 # Function to check if a file is being actively written
@@ -38,7 +44,7 @@ def is_file_being_written(file_path, max_duration_seconds=14400):
 # Function to process a new file
 def process_new_file(file_path):
     filename = os.path.basename(file_path)
-    print(f"New file detected: {filename}. Waiting for recording to end.")
+    pprint(f"New file detected: {filename}. Waiting for recording to end.")
     if filename.endswith((".ts", "mp4", "mkv", "mpg")):
         try:
             for show, show_dest in shows.items():
@@ -49,19 +55,19 @@ def process_new_file(file_path):
 
                     # Check if the file is being actively written
                     if is_file_being_written(file_path, max_duration_seconds=14400):
-                        print(f"File {filename} is still being written after three hours; skipping...")
+                        pprint(f"File {filename} is still being written after three hours; skipping...")
                         return
 
                     if any(parts.group(1) in existing_file for existing_file in glob(f"{new_location}*")):
                         return
 
-                    print(f"Creating hard link for {filename}... ", end="")
+                    pprint(f"Creating hard link for {filename}")
                     os.makedirs(new_location, exist_ok=True, mode=0o755)
                     os.link(file_path, f"{new_location}{filename}")
-                    print("Success!")
+                    pprint(f"Success: '{filename}'!")
                     return
         except Exception as e:
-            print(f"Error: {e}")
+            pprint(f"Error: {e}")
 
 
 # Define a custom event handler
@@ -83,7 +89,7 @@ if __name__ == "__main__":
     # Start the observer
     observer.start()
 
-    print(f"Monitoring {watch_path} for new files...")
+    pprint(f"Monitoring {watch_path} for new files...")
 
     try:
         observer.join()
