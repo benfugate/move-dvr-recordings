@@ -54,15 +54,28 @@ class RecordingMover:
                     if recording in filename:
                         pprint(f"New file detected: '{filename}'. Waiting for recording to end.")
                         parts = re.match(r".*(S(\d+)E\d+).*", filename)
-                        season_number = parts.group(2).lstrip("0")
+                        if parts:
+                            # If it matches the TV show pattern, extract season number
+                            season_number = parts.group(2).lstrip("0")
+                        else:
+                            # If it doesn't match, check for a year in the filename and use it as season
+                            year_match = re.search(r'(\d{4})-\d{2}-\d{2}', filename)
+                            if year_match:
+                                season_number = year_match.group(1)  # Use the year as the season
+                            else:
+                                season_number = "unknown"  # Fallback in case no year found
+
                         new_location = f"{self.dest_path}/{recording_dest}/Season {season_number}/"
 
                         # Check if the file is being actively written
                         if self._is_file_being_written(file_path, max_duration_seconds=self.max_write_time):
-                            pprint(f"File '{filename}' is still being written after three hours; skipping...")
+                            pprint(f"File '{filename}' is still being written after {self.max_write_time/60} minutes; "
+                                   f"skipping...")
                             return
 
-                        if any(parts.group(1) in existing_file for existing_file in glob(f"{new_location}*")):
+                        recording_title = parts.group(1) if parts else filename
+                        if any(recording_title in existing_file for existing_file in glob(f"{new_location}*")):
+                            pprint("File already exists in mapping destination. Skipping!")
                             return
 
                         pprint(f"Creating hard link for '{filename}'")
