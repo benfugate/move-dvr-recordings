@@ -13,6 +13,7 @@ The primary use is to move a finished recording into my Plex folder structure.
     - Subfolders will be defined in the `mappings.json`
 - Optional
   - `max_write_time` Defines the maximum amount of time the script will wait for a file to stop increasing in size
+  - `PUID` / `PGID` User/group ID the script runs as, so created files/folders have the right ownership on the host (default `99`/`100`, matching Unraid's `nobody:users`)
 
 #### mappings.json:
 
